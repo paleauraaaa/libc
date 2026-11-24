@@ -15,6 +15,10 @@ use crate::target::PointerWidth::P32;
 use crate::target::Target;
 
 fn do_cc(t: &Target) {
+    if t.env == "picolibc" {
+        return;
+    }
+
     if t.families.iter().any(|x| x == "unix") || t.cygwin() {
         let exclude = t.redox() || t.wasi() || t.wali() || t.qurt();
         if !exclude {
@@ -69,6 +73,7 @@ fn do_cc(t: &Target) {
 
 fn do_ctest(t: &Target) {
     match t {
+        t if t.env == "picolibc" => test_picolibc(),
         t if t.android() => test_android(t),
         t if t.apple() => test_apple(t),
         t if t.dragonfly() => test_dragonflybsd(t),
@@ -148,6 +153,15 @@ macro_rules! headers {
             )?
         )+
     };
+}
+
+fn test_picolibc() {
+    let mut cfg = ctest_cfg();
+    cfg.define("_POSIX_C_SOURCE", Some("200809L"));
+    headers!(cfg, "fcntl.h", "stdint.h", "stdio.h", "stdlib.h", "string.h", "unistd.h",);
+    cfg.rename_struct_ty(|ty| (ty == "FILE").then(|| ty.to_string()));
+    cfg.skip_struct(|s| s.ident() == "FILE");
+    cfg.build_test("../src/lib.rs", "ctest_output.rs");
 }
 
 fn test_apple(t: &Target) {

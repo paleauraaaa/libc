@@ -121,7 +121,10 @@ macro_rules! prelude {
             };
 
             #[allow(unused_imports)]
-            #[cfg(any(target_os = "linux", target_os = "android", target_os = "l4re"))]
+            #[cfg(all(
+                not(target_env = "picolibc"),
+                any(target_os = "linux", target_os = "android", target_os = "l4re")
+            ))]
             pub(crate) use crate::types::u32_cast_ioctl;
             #[allow(unused_imports)]
             pub(crate) use crate::types::{

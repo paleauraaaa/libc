@@ -219,7 +219,11 @@
 
 #[macro_use]
 mod macros;
+#[cfg(not(target_env = "picolibc"))]
 mod new;
+#[cfg(target_env = "picolibc")]
+#[path = "new/common/posix/unistd.rs"]
+mod picolibc_unistd;
 
 cfg_if! {
     if #[cfg(feature = "rustc-dep-of-std")] {
@@ -230,10 +234,19 @@ cfg_if! {
 pub use core::ffi::c_void;
 
 #[allow(unused_imports)] // needed while the module is empty on some platforms
+#[cfg(not(target_env = "picolibc"))]
 pub use new::*;
 
 cfg_if! {
-    if #[cfg(windows)] {
+    if #[cfg(target_env = "picolibc")] {
+        mod primitives;
+        pub use crate::primitives::*;
+
+        mod picolibc;
+        pub use crate::picolibc::*;
+
+        prelude!();
+    } else if #[cfg(windows)] {
         mod primitives;
         pub use crate::primitives::*;
 

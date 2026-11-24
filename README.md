@@ -57,6 +57,17 @@ but this is not guaranteed.
 You can see the platform(target)-specific docs on [docs.rs], select a platform
 you want to see.
 
+Targets reporting `target_env = "picolibc"` expose common Picolibc C and
+file-descriptor bindings, without assuming a Unix target family. These bindings
+use Picolibc's default types and flags; machine or OS overrides require their
+own bindings. Applications must provide the target's startup code, Picolibc
+library, and any OS-specific system calls and link directives. Picolibc
+configurations may omit individual facilities such as file-backed stdio.
+The bindings currently cover only a subset of Picolibc's headers and do not
+expose `errno`, whose implementation depends on the Picolibc configuration.
+The `libc-test` ABI checks require a target with Rust `std`, a C compiler, and
+the matching configured Picolibc headers.
+
 See [`ci/verify-build.py`](https://github.com/rust-lang/libc/blob/HEAD/ci/verify-build.py) for
 the platforms on which `libc` is guaranteed to build for each Rust toolchain.
 The test matrices at [GitHub Actions] show the platforms in which `libc` tests

@@ -130,7 +130,7 @@ const CHECK_CFG_EXTRA: &[(&str, &[&str])] = &[
     ),
     (
         "target_env",
-        &["illumos", "wasi", "aix", "ohos", "nto71_iosock"],
+        &["illumos", "wasi", "aix", "ohos", "nto71_iosock", "picolibc"],
     ),
     (
         "target_arch",
