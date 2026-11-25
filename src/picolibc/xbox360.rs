@@ -1,11 +1,15 @@
 //! Xbox 360 interfaces provided by the NXEDK Picolibc port.
 
-use crate::off_t;
 use crate::prelude::*;
+use crate::{
+    off_t,
+    FILE,
+};
 
 pub type pthread_t = c_int;
 pub type time_t = i64;
 pub type clockid_t = c_ulong;
+pub type va_list = *mut c_char;
 
 s! {
     pub struct pthread_attr_t {
@@ -107,6 +111,16 @@ pub const CLOCK_REALTIME: clockid_t = 1;
 pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
+    pub fn vprintf(format: *const c_char, ap: va_list) -> c_int;
+    pub fn vfprintf(stream: *mut FILE, format: *const c_char, ap: va_list) -> c_int;
+    pub fn vsprintf(buf: *mut c_char, format: *const c_char, ap: va_list) -> c_int;
+    pub fn vsnprintf(buf: *mut c_char, size: size_t, format: *const c_char, ap: va_list) -> c_int;
+    pub fn vasprintf(buf: *mut *mut c_char, format: *const c_char, ap: va_list) -> c_int;
+    pub fn vdprintf(fd: c_int, format: *const c_char, ap: va_list) -> c_int;
+    pub fn vscanf(format: *const c_char, ap: va_list) -> c_int;
+    pub fn vfscanf(stream: *mut FILE, format: *const c_char, ap: va_list) -> c_int;
+    pub fn vsscanf(buf: *const c_char, format: *const c_char, ap: va_list) -> c_int;
+
     pub fn pthread_attr_init(attr: *mut pthread_attr_t) -> c_int;
     pub fn pthread_attr_destroy(attr: *mut pthread_attr_t) -> c_int;
     pub fn pthread_attr_setstacksize(attr: *mut pthread_attr_t, stack_size: c_int) -> c_int;

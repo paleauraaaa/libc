@@ -98,3 +98,13 @@ pthread_t
 sched_yield
 time_t
 timespec
+va_list
+vasprintf
+vdprintf
+vfprintf
+vfscanf
+vprintf
+vscanf
+vsnprintf
+vsprintf
+vsscanf

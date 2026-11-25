@@ -9,6 +9,82 @@ extern "C" fn thread_main(arg: *mut c_void) -> *mut c_void {
 
 pub fn smoke() -> Result<(), &'static str> {
     unsafe {
+        let mut buf = [0u8; 32];
+        let format = b"%d:%08x\0";
+        if libc::snprintf(
+            buf.as_mut_ptr().cast(),
+            buf.len(),
+            format.as_ptr().cast(),
+            -42 as libc::c_int,
+            0x1234 as libc::c_uint,
+        ) != 12
+            || &buf[..13] != b"-42:00001234\0"
+        {
+            return Err("snprintf");
+        }
+        let mut decimal: libc::c_int = 0;
+        let mut hex: libc::c_uint = 0;
+        if libc::sscanf(
+            buf.as_ptr().cast(),
+            b"%d:%x\0".as_ptr().cast(),
+            &mut decimal,
+            &mut hex,
+        ) != 2
+            || decimal != -42
+            || hex != 0x1234
+        {
+            return Err("sscanf");
+        }
+        if libc::snprintf(
+            buf.as_mut_ptr().cast(),
+            5,
+            format.as_ptr().cast(),
+            -42 as libc::c_int,
+            0x1234 as libc::c_uint,
+        ) != 12
+            || &buf[..5] != b"-42:\0"
+        {
+            return Err("snprintf truncation");
+        }
+        let mut allocated: *mut libc::c_char = ptr::null_mut();
+        let result = libc::asprintf(&mut allocated, b"%d\0".as_ptr().cast(), 73 as libc::c_int);
+        if allocated.is_null() {
+            return Err("asprintf allocation");
+        }
+        let allocated_ok = result == 2 && libc::strcmp(allocated, b"73\0".as_ptr().cast()) == 0;
+        libc::free(allocated.cast());
+        if !allocated_ok {
+            return Err("asprintf");
+        }
+
+        let mut contents = [0u8; 32];
+        let stream = libc::fmemopen(
+            contents.as_mut_ptr().cast(),
+            contents.len(),
+            b"w+\0".as_ptr().cast(),
+        );
+        if stream.is_null() {
+            return Err("fmemopen");
+        }
+        let mut pos: libc::fpos_t = 0;
+        let mut read_buf = [0u8; 8];
+        let stream_ok = libc::fprintf(stream, b"%d\0".as_ptr().cast(), 73 as libc::c_int) == 2
+            && libc::fflush(stream) == 0
+            && libc::fseek(stream, 0, libc::SEEK_SET) == 0
+            && libc::fgetpos(stream, &mut pos) == 0
+            && libc::fgetc(stream) == b'7' as libc::c_int
+            && libc::fsetpos(stream, &pos) == 0
+            && !libc::fgets(
+                read_buf.as_mut_ptr().cast(),
+                read_buf.len() as libc::c_int,
+                stream,
+            )
+            .is_null()
+            && &read_buf[..3] == b"73\0";
+        if libc::fclose(stream) != 0 || !stream_ok {
+            return Err("memory stream");
+        }
+
         let mut attr = libc::pthread_attr_t {
             __stack_size: 0,
             __detachstate: 0,

@@ -15,6 +15,7 @@ pub use self::xbox360::*;
 pub type size_t = usize;
 pub type ssize_t = isize;
 pub type off_t = i64;
+pub type fpos_t = off_t;
 pub type intptr_t = isize;
 pub type uintptr_t = usize;
 
@@ -26,6 +27,9 @@ pub const EOF: c_int = -1;
 pub const SEEK_SET: c_int = 0;
 pub const SEEK_CUR: c_int = 1;
 pub const SEEK_END: c_int = 2;
+pub const _IOFBF: c_int = 0;
+pub const _IOLBF: c_int = 1;
+pub const _IONBF: c_int = 2;
 
 pub const O_RDONLY: c_int = 0;
 pub const O_WRONLY: c_int = 1;
@@ -44,6 +48,10 @@ pub const O_DIRECTORY: c_int = 0x200000;
 pub const AT_FDCWD: c_int = -2;
 
 extern "C" {
+    pub static stdin: *mut FILE;
+    pub static stdout: *mut FILE;
+    pub static stderr: *mut FILE;
+
     pub fn malloc(size: size_t) -> *mut c_void;
     pub fn calloc(nmemb: size_t, size: size_t) -> *mut c_void;
     pub fn realloc(ptr: *mut c_void, size: size_t) -> *mut c_void;
@@ -63,17 +71,66 @@ extern "C" {
 
     pub fn fopen(path: *const c_char, mode: *const c_char) -> *mut FILE;
     pub fn freopen(path: *const c_char, mode: *const c_char, stream: *mut FILE) -> *mut FILE;
+    pub fn fdopen(fd: c_int, mode: *const c_char) -> *mut FILE;
+    pub fn fmemopen(buf: *mut c_void, size: size_t, mode: *const c_char) -> *mut FILE;
+    pub fn open_memstream(buf: *mut *mut c_char, size: *mut size_t) -> *mut FILE;
     pub fn fclose(stream: *mut FILE) -> c_int;
     pub fn fflush(stream: *mut FILE) -> c_int;
+    pub fn printf(format: *const c_char, ...) -> c_int;
+    pub fn fprintf(stream: *mut FILE, format: *const c_char, ...) -> c_int;
+    pub fn sprintf(buf: *mut c_char, format: *const c_char, ...) -> c_int;
+    pub fn snprintf(buf: *mut c_char, size: size_t, format: *const c_char, ...) -> c_int;
+    pub fn asprintf(buf: *mut *mut c_char, format: *const c_char, ...) -> c_int;
+    pub fn dprintf(fd: c_int, format: *const c_char, ...) -> c_int;
+    pub fn scanf(format: *const c_char, ...) -> c_int;
+    pub fn fscanf(stream: *mut FILE, format: *const c_char, ...) -> c_int;
+    pub fn sscanf(buf: *const c_char, format: *const c_char, ...) -> c_int;
+    pub fn fputc(c: c_int, stream: *mut FILE) -> c_int;
+    pub fn putc(c: c_int, stream: *mut FILE) -> c_int;
+    pub fn putchar(c: c_int) -> c_int;
+    pub fn fputs(s: *const c_char, stream: *mut FILE) -> c_int;
+    pub fn puts(s: *const c_char) -> c_int;
+    pub fn fgetc(stream: *mut FILE) -> c_int;
+    pub fn getc(stream: *mut FILE) -> c_int;
+    pub fn getchar() -> c_int;
+    pub fn ungetc(c: c_int, stream: *mut FILE) -> c_int;
+    pub fn fgets(s: *mut c_char, size: c_int, stream: *mut FILE) -> *mut c_char;
+    pub fn getc_unlocked(stream: *mut FILE) -> c_int;
+    pub fn getchar_unlocked() -> c_int;
+    pub fn putc_unlocked(c: c_int, stream: *mut FILE) -> c_int;
+    pub fn putchar_unlocked(c: c_int) -> c_int;
+    pub fn flockfile(stream: *mut FILE);
+    pub fn ftrylockfile(stream: *mut FILE) -> c_int;
+    pub fn funlockfile(stream: *mut FILE);
+    pub fn getline(line: *mut *mut c_char, n: *mut size_t, stream: *mut FILE) -> ssize_t;
+    pub fn getdelim(
+        line: *mut *mut c_char,
+        n: *mut size_t,
+        delim: c_int,
+        stream: *mut FILE,
+    ) -> ssize_t;
     pub fn fread(ptr: *mut c_void, size: size_t, nmemb: size_t, stream: *mut FILE) -> size_t;
     pub fn fwrite(ptr: *const c_void, size: size_t, nmemb: size_t, stream: *mut FILE) -> size_t;
+    pub fn fgetpos(stream: *mut FILE, pos: *mut fpos_t) -> c_int;
+    pub fn fsetpos(stream: *mut FILE, pos: *const fpos_t) -> c_int;
     pub fn fseek(stream: *mut FILE, offset: c_long, whence: c_int) -> c_int;
     pub fn ftell(stream: *mut FILE) -> c_long;
+    pub fn fseeko(stream: *mut FILE, offset: off_t, whence: c_int) -> c_int;
+    pub fn ftello(stream: *mut FILE) -> off_t;
+    pub fn rewind(stream: *mut FILE);
+    pub fn setbuf(stream: *mut FILE, buf: *mut c_char);
+    pub fn setvbuf(stream: *mut FILE, buf: *mut c_char, mode: c_int, size: size_t) -> c_int;
+    pub fn fileno(stream: *mut FILE) -> c_int;
     pub fn feof(stream: *mut FILE) -> c_int;
     pub fn ferror(stream: *mut FILE) -> c_int;
     pub fn clearerr(stream: *mut FILE);
+    pub fn perror(s: *const c_char);
     pub fn remove(path: *const c_char) -> c_int;
     pub fn rename(old: *const c_char, new: *const c_char) -> c_int;
+    pub fn tmpfile() -> *mut FILE;
+    pub fn tmpnam(s: *mut c_char) -> *mut c_char;
+    pub fn popen(command: *const c_char, mode: *const c_char) -> *mut FILE;
+    pub fn pclose(stream: *mut FILE) -> c_int;
 
     pub fn open(path: *const c_char, flags: c_int, ...) -> c_int;
     pub fn openat(dirfd: c_int, path: *const c_char, flags: c_int, ...) -> c_int;
