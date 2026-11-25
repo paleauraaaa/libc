@@ -26,6 +26,9 @@ pub(crate) fn do_semver() {
 
     if target_env == "picolibc" {
         process_semver_file(&mut output, &mut semver_root, "picolibc");
+        if env::var("CARGO_CFG_TARGET_OS").unwrap() == "xbox360" {
+            process_semver_file(&mut output, &mut semver_root, "xbox360-picolibc");
+        }
         return;
     }
 

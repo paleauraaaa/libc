@@ -7,6 +7,11 @@ pub use crate::picolibc_unistd::{
 };
 use crate::prelude::*;
 
+#[cfg(target_os = "xbox360")]
+mod xbox360;
+#[cfg(target_os = "xbox360")]
+pub use self::xbox360::*;
+
 pub type size_t = usize;
 pub type ssize_t = isize;
 pub type off_t = i64;

@@ -73,7 +73,7 @@ fn do_cc(t: &Target) {
 
 fn do_ctest(t: &Target) {
     match t {
-        t if t.env == "picolibc" => test_picolibc(),
+        t if t.env == "picolibc" => test_picolibc(t),
         t if t.android() => test_android(t),
         t if t.apple() => test_apple(t),
         t if t.dragonfly() => test_dragonflybsd(t),
@@ -123,6 +123,8 @@ fn ctest_cfg() -> ctest::TestGenerator {
 fn main() {
     // Avoid unnecessary re-building.
     println!("cargo:rerun-if-changed=.");
+    println!("cargo:rustc-check-cfg=cfg(target_os, values(\"xbox360\"))");
+    println!("cargo:rustc-check-cfg=cfg(target_env, values(\"picolibc\"))");
     let t = Target::from_env();
 
     // Ensure version checking works, even if we don't use it.
@@ -155,11 +157,32 @@ macro_rules! headers {
     };
 }
 
-fn test_picolibc() {
+fn test_picolibc(t: &Target) {
     let mut cfg = ctest_cfg();
-    cfg.define("_POSIX_C_SOURCE", Some("200809L"));
+    if t.os == "xbox360" {
+        cfg.define("_GNU_SOURCE", None);
+    } else {
+        cfg.define("_POSIX_C_SOURCE", Some("200809L"));
+    }
     headers!(cfg, "fcntl.h", "stdint.h", "stdio.h", "stdlib.h", "string.h", "unistd.h",);
-    cfg.rename_struct_ty(|ty| (ty == "FILE").then(|| ty.to_string()));
+    if t.os == "xbox360" {
+        headers!(
+            cfg,
+            "errno.h",
+            "pthread.h",
+            "sched.h",
+            "sys/mman.h",
+            "time.h",
+        );
+        cfg.skip_const(|c| matches!(c.ident(), "MAP_FAILED" | "PTHREAD_MUTEX_INITIALIZER"));
+        cfg.skip_fn(|f| {
+            matches!(
+                f.ident(),
+                "fchdir" | "remove" | "rename" | "rmdir" | "unlink"
+            )
+        });
+    }
+    cfg.rename_struct_ty(|ty| (ty == "FILE" || ty.ends_with("_t")).then(|| ty.to_string()));
     cfg.skip_struct(|s| s.ident() == "FILE");
     cfg.build_test("../src/lib.rs", "ctest_output.rs");
 }
