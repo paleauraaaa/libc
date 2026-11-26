@@ -15,6 +15,7 @@ pub use self::xbox360::*;
 pub type size_t = usize;
 pub type ssize_t = isize;
 pub type off_t = i64;
+pub type mode_t = u32;
 pub type fpos_t = off_t;
 pub type intptr_t = isize;
 pub type uintptr_t = usize;
