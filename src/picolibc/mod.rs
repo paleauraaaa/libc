@@ -18,6 +18,8 @@ pub type off_t = i64;
 pub type fpos_t = off_t;
 pub type intptr_t = isize;
 pub type uintptr_t = usize;
+pub type sig_atomic_t = c_int;
+pub type sighandler_t = size_t;
 
 extern_ty! {
     pub type FILE;
@@ -26,6 +28,16 @@ extern_ty! {
 pub const EOF: c_int = -1;
 pub const EXIT_SUCCESS: c_int = 0;
 pub const EXIT_FAILURE: c_int = 1;
+pub const SIG_DFL: sighandler_t = 0;
+pub const SIG_IGN: sighandler_t = 1;
+pub const SIG_ERR: sighandler_t = !0;
+pub const SIGINT: c_int = 2;
+pub const SIGILL: c_int = 4;
+pub const SIGABRT: c_int = 6;
+pub const SIGFPE: c_int = 8;
+pub const SIGSEGV: c_int = 11;
+pub const SIGPIPE: c_int = 13;
+pub const SIGTERM: c_int = 15;
 pub const SEEK_SET: c_int = 0;
 pub const SEEK_CUR: c_int = 1;
 pub const SEEK_END: c_int = 2;
@@ -61,6 +73,8 @@ extern "C" {
     pub fn abort() -> !;
     pub fn exit(status: c_int) -> !;
     pub fn _exit(status: c_int) -> !;
+    pub fn signal(sig: c_int, handler: sighandler_t) -> sighandler_t;
+    pub fn raise(sig: c_int) -> c_int;
 
     pub fn memcpy(dest: *mut c_void, src: *const c_void, n: size_t) -> *mut c_void;
     pub fn memmove(dest: *mut c_void, src: *const c_void, n: size_t) -> *mut c_void;
