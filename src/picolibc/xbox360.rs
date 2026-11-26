@@ -3,6 +3,8 @@
 use crate::prelude::*;
 use crate::{
     off_t,
+    size_t,
+    ssize_t,
     FILE,
 };
 
@@ -111,6 +113,9 @@ pub const CLOCK_REALTIME: clockid_t = 1;
 pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
+    pub fn pread(fd: c_int, buf: *mut c_void, count: size_t, offset: off_t) -> ssize_t;
+    pub fn pwrite(fd: c_int, buf: *const c_void, count: size_t, offset: off_t) -> ssize_t;
+
     pub fn vprintf(format: *const c_char, ap: va_list) -> c_int;
     pub fn vfprintf(stream: *mut FILE, format: *const c_char, ap: va_list) -> c_int;
     pub fn vsprintf(buf: *mut c_char, format: *const c_char, ap: va_list) -> c_int;
