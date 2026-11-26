@@ -113,6 +113,7 @@ pub const CLOCK_REALTIME: clockid_t = 1;
 pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
+    pub fn ftruncate(fd: c_int, length: off_t) -> c_int;
     pub fn pread(fd: c_int, buf: *mut c_void, count: size_t, offset: off_t) -> ssize_t;
     pub fn pwrite(fd: c_int, buf: *const c_void, count: size_t, offset: off_t) -> ssize_t;
 
