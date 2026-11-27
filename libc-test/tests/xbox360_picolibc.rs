@@ -338,3 +338,65 @@ pub fn rename_smoke() -> Result<(), &'static str> {
 fn xbox360_picolibc_rename() {
     rename_smoke().unwrap();
 }
+
+pub fn directory_smoke() -> Result<(), &'static str> {
+    unsafe {
+        let path = b"game:\\\0";
+        let file = b"libc-dir-smoke.bin\0";
+        if libc::mkdir(path.as_ptr().cast(), 0o755) != -1 {
+            return Err("mkdir existing directory");
+        }
+        let fd = libc::open(path.as_ptr().cast(), libc::O_RDONLY | libc::O_DIRECTORY);
+        if fd < 0 {
+            return Err("open directory");
+        }
+        if libc::mkdirat(fd, b".\0".as_ptr().cast(), 0o755) != -1 {
+            return Err("mkdirat existing directory");
+        }
+        let file_fd = libc::openat(
+            fd,
+            file.as_ptr().cast(),
+            libc::O_CREAT | libc::O_EXCL | libc::O_RDWR,
+            0 as libc::mode_t,
+        );
+        if file_fd < 0 {
+            return Err("create directory entry");
+        }
+        let mut file_stat = core::mem::MaybeUninit::<libc::stat>::zeroed();
+        let file_ok = libc::fstat(file_fd, file_stat.as_mut_ptr()) == 0;
+        if libc::close(file_fd) != 0 || !file_ok {
+            return Err("stat directory entry");
+        }
+        let stream = libc::fdopendir(fd);
+        if stream.is_null() {
+            return Err("fdopendir");
+        }
+        let mut found_file = false;
+        loop {
+            let entry = libc::readdir(stream);
+            if entry.is_null() {
+                break;
+            }
+            if libc::strcmp((*entry).d_name.as_ptr(), file.as_ptr().cast()) == 0 {
+                found_file = (*entry).d_type == libc::DT_REG
+                    && (*entry).d_ino == file_stat.assume_init_ref().st_ino;
+            }
+        }
+        if libc::closedir(stream) != 0 || !found_file || libc::close(fd) != -1 {
+            return Err("readdir or closedir");
+        }
+        let stream = libc::opendir(path.as_ptr().cast());
+        if stream.is_null() || libc::closedir(stream) != 0 {
+            return Err("opendir");
+        }
+        if libc::unlink(b"game:\\libc-dir-smoke.bin\0".as_ptr().cast()) != 0 {
+            return Err("unlink directory entry");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn xbox360_picolibc_directory() {
+    directory_smoke().unwrap();
+}

@@ -71,6 +71,10 @@ the matching configured Picolibc headers.
 On Xbox 360, `unlink` and `unlinkat` reject locally open files; `unlinkat` does
 not support `AT_REMOVEDIR`.
 
+Xbox directory-stream and directory-creation bindings are also available.
+`mkdir` and `mkdirat` ignore mode bits; `rewinddir` and `dirfd` are not
+implemented in the port.
+
 See [`ci/verify-build.py`](https://github.com/rust-lang/libc/blob/HEAD/ci/verify-build.py) for
 the platforms on which `libc` is guaranteed to build for each Rust toolchain.
 The test matrices at [GitHub Actions] show the platforms in which `libc` tests

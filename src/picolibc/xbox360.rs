@@ -20,12 +20,23 @@ pub type uid_t = u32;
 pub type gid_t = u32;
 pub type blksize_t = i32;
 pub type blkcnt_t = i64;
+pub type pid_t = c_int;
 
 pub const AT_SYMLINK_NOFOLLOW: c_int = 0x0002;
 pub const AT_REMOVEDIR: c_int = 0x0008;
 pub const AT_EMPTY_PATH: c_int = 0x0010;
 
+extern_ty! {
+    pub type DIR;
+}
+
 s! {
+    pub struct dirent {
+        pub d_ino: ino_t,
+        pub d_type: c_uchar,
+        pub d_name: [c_char; 256],
+    }
+
     pub struct pthread_attr_t {
         pub __stack_size: c_int,
         pub __detachstate: c_int,
@@ -63,6 +74,15 @@ s! {
         pub st_ctim: timespec,
     }
 }
+
+pub const DT_UNKNOWN: c_uchar = 0;
+pub const DT_BLK: c_uchar = 1;
+pub const DT_CHR: c_uchar = 2;
+pub const DT_DIR: c_uchar = 3;
+pub const DT_FIFO: c_uchar = 4;
+pub const DT_LNK: c_uchar = 5;
+pub const DT_REG: c_uchar = 6;
+pub const DT_SOCK: c_uchar = 7;
 
 pub const S_IFMT: mode_t = 0o170000;
 pub const S_IFDIR: mode_t = 0o040000;
@@ -167,6 +187,14 @@ pub const CLOCK_REALTIME: clockid_t = 1;
 pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
+    pub fn fdopendir(fd: c_int) -> *mut DIR;
+    pub fn opendir(name: *const c_char) -> *mut DIR;
+    pub fn readdir(dir: *mut DIR) -> *mut dirent;
+    pub fn closedir(dir: *mut DIR) -> c_int;
+    /// The Xbox port ignores POSIX mode bits.
+    pub fn mkdir(path: *const c_char, mode: mode_t) -> c_int;
+    /// The Xbox port ignores POSIX mode bits.
+    pub fn mkdirat(dirfd: c_int, path: *const c_char, mode: mode_t) -> c_int;
     pub fn fstat(fd: c_int, buf: *mut stat) -> c_int;
     pub fn fstatat(dirfd: c_int, path: *const c_char, buf: *mut stat, flags: c_int) -> c_int;
     pub fn stat(path: *const c_char, buf: *mut stat) -> c_int;

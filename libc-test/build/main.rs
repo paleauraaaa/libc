@@ -168,6 +168,7 @@ fn test_picolibc(t: &Target) {
     if t.os == "xbox360" {
         headers!(
             cfg,
+            "dirent.h",
             "errno.h",
             "pthread.h",
             "sched.h",
@@ -189,8 +190,10 @@ fn test_picolibc(t: &Target) {
             )
         });
     }
-    cfg.rename_struct_ty(|ty| (ty == "FILE" || ty.ends_with("_t")).then(|| ty.to_string()));
-    cfg.skip_struct(|s| s.ident() == "FILE");
+    cfg.rename_struct_ty(|ty| {
+        (ty == "FILE" || ty == "DIR" || ty.ends_with("_t")).then(|| ty.to_string())
+    });
+    cfg.skip_struct(|s| matches!(s.ident(), "FILE" | "DIR"));
     cfg.build_test("../src/lib.rs", "ctest_output.rs");
 }
 
