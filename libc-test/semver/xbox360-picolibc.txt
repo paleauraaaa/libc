@@ -188,6 +188,7 @@ nanosleep
 nlink_t
 opendir
 pid_t
+posix_memalign
 pthread_attr_destroy
 pthread_attr_getdetachstate
 pthread_attr_getstacksize

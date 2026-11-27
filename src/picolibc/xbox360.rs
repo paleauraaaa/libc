@@ -259,6 +259,8 @@ pub const CLOCK_REALTIME: clockid_t = 1;
 pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
+    pub fn posix_memalign(memptr: *mut *mut c_void, align: size_t, size: size_t) -> c_int;
+
     pub fn fdopendir(fd: c_int) -> *mut DIR;
     pub fn opendir(name: *const c_char) -> *mut DIR;
     pub fn readdir(dir: *mut DIR) -> *mut dirent;
