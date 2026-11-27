@@ -183,8 +183,6 @@ fn test_picolibc(t: &Target) {
                 "fchdir"
                     | "perror"
                     | "popen"
-                    | "remove"
-                    | "rename"
                     | "rmdir"
                     | "strerror"
                     | "tmpfile"

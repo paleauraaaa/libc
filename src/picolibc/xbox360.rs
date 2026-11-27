@@ -114,6 +114,7 @@ pub const EACCES: c_int = 13;
 pub const EFAULT: c_int = 14;
 pub const EBUSY: c_int = 16;
 pub const EEXIST: c_int = 17;
+pub const EXDEV: c_int = 18;
 pub const ENODEV: c_int = 19;
 pub const ENOTDIR: c_int = 20;
 pub const EISDIR: c_int = 21;
@@ -121,6 +122,7 @@ pub const EINVAL: c_int = 22;
 pub const ENOSPC: c_int = 28;
 pub const EDEADLK: c_int = 45;
 pub const ENOSYS: c_int = 88;
+pub const ENOTEMPTY: c_int = 90;
 pub const ENAMETOOLONG: c_int = 91;
 pub const ENOTSUP: c_int = 134;
 pub const EOVERFLOW: c_int = 139;
@@ -172,6 +174,13 @@ extern "C" {
     pub fn lstat(path: *const c_char, buf: *mut stat) -> c_int;
     /// The Xbox port rejects locally open files and does not support `AT_REMOVEDIR`.
     pub fn unlinkat(dirfd: c_int, path: *const c_char, flags: c_int) -> c_int;
+    /// The Xbox port rejects renames involving locally open files.
+    pub fn renameat(
+        olddirfd: c_int,
+        oldpath: *const c_char,
+        newdirfd: c_int,
+        newpath: *const c_char,
+    ) -> c_int;
     pub fn ftruncate(fd: c_int, length: off_t) -> c_int;
     pub fn pread(fd: c_int, buf: *mut c_void, count: size_t, offset: off_t) -> ssize_t;
     pub fn pwrite(fd: c_int, buf: *const c_void, count: size_t, offset: off_t) -> ssize_t;

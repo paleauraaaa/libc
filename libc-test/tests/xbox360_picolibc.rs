@@ -283,3 +283,58 @@ pub fn unlink_smoke() -> Result<(), &'static str> {
 fn xbox360_picolibc_unlink() {
     unlink_smoke().unwrap();
 }
+
+pub fn rename_smoke() -> Result<(), &'static str> {
+    unsafe {
+        let old = b"game:\\libc-rename-source.bin\0";
+        let new = b"game:\\libc-rename-target.bin\0";
+        let fd = libc::open(
+            old.as_ptr().cast(),
+            libc::O_CREAT | libc::O_EXCL | libc::O_RDWR,
+            0 as libc::mode_t,
+        );
+        if fd < 0 || libc::close(fd) != 0 {
+            return Err("create rename source");
+        }
+        let target_fd = libc::open(
+            new.as_ptr().cast(),
+            libc::O_CREAT | libc::O_EXCL | libc::O_RDWR,
+            0 as libc::mode_t,
+        );
+        if target_fd < 0 {
+            libc::unlink(old.as_ptr().cast());
+            return Err("create rename target");
+        }
+        if libc::close(target_fd) != 0 {
+            return Err("close rename target");
+        }
+        if libc::rename(old.as_ptr().cast(), new.as_ptr().cast()) != 0 {
+            return Err("rename");
+        }
+        let root = libc::open(
+            b"game:\\\0".as_ptr().cast(),
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        );
+        if root < 0 {
+            return Err("open renameat directory");
+        }
+        if libc::renameat(
+            root,
+            b"libc-rename-target.bin\0".as_ptr().cast(),
+            root,
+            b"libc-rename-source.bin\0".as_ptr().cast(),
+        ) != 0
+        {
+            return Err("renameat");
+        }
+        if libc::close(root) != 0 || libc::unlink(old.as_ptr().cast()) != 0 {
+            return Err("clean up rename test");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn xbox360_picolibc_rename() {
+    rename_smoke().unwrap();
+}
