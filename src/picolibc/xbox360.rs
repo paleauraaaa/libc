@@ -44,7 +44,7 @@ s! {
     }
 
     pub struct pthread_attr_t {
-        pub __stack_size: c_int,
+        pub __stack_size: size_t,
         pub __detachstate: c_int,
     }
 
@@ -124,6 +124,7 @@ pub const S_IXOTH: mode_t = 0o000001;
 
 pub const PTHREAD_CREATE_JOINABLE: c_int = 0;
 pub const PTHREAD_CREATE_DETACHED: c_int = 1;
+pub const PTHREAD_STACK_MIN: size_t = 16384;
 pub const PTHREAD_SCOPE_PROCESS: c_int = 0;
 pub const PTHREAD_SCOPE_SYSTEM: c_int = 1;
 pub const PTHREAD_MUTEX_STALLED: c_int = 0;
@@ -296,8 +297,9 @@ extern "C" {
 
     pub fn pthread_attr_init(attr: *mut pthread_attr_t) -> c_int;
     pub fn pthread_attr_destroy(attr: *mut pthread_attr_t) -> c_int;
-    pub fn pthread_attr_setstacksize(attr: *mut pthread_attr_t, stack_size: c_int) -> c_int;
-    pub fn pthread_attr_getstacksize(attr: *mut pthread_attr_t, stack_size: *mut c_int) -> c_int;
+    pub fn pthread_attr_setstacksize(attr: *mut pthread_attr_t, stack_size: size_t) -> c_int;
+    pub fn pthread_attr_getstacksize(attr: *const pthread_attr_t, stack_size: *mut size_t)
+        -> c_int;
     pub fn pthread_attr_setdetachstate(attr: *mut pthread_attr_t, detachstate: c_int) -> c_int;
     pub fn pthread_attr_getdetachstate(attr: *mut pthread_attr_t, detachstate: *mut c_int)
         -> c_int;

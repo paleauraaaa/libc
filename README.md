@@ -76,6 +76,8 @@ Xbox POSIX error constants match the port's headers; their presence does not
 imply that the corresponding OS facilities are implemented.
 `dup` and `dup2` share file offsets on Xbox, including redirected standard
 output and error descriptors.
+Xbox thread stack attributes accept sizes from `PTHREAD_STACK_MIN` through
+`INT_MAX`; a newly initialized attribute reports zero for the kernel default.
 `mkdir` and `mkdirat` ignore mode bits; `rewinddir` is not implemented in the
 port. `dirfd` returns a descriptor owned and closed by the directory stream;
 use it only for operations that do not alter the stream position.

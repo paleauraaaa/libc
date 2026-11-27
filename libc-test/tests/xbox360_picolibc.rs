@@ -141,10 +141,14 @@ pub fn smoke() -> Result<(), &'static str> {
         if libc::pthread_attr_init(&mut attr) != 0 {
             return Err("pthread_attr_init");
         }
-        let mut stack_size = 0;
-        if libc::pthread_attr_setstacksize(&mut attr, 65536) != 0
+        let mut stack_size: libc::size_t = 0;
+        if libc::pthread_attr_setstacksize(&mut attr, libc::PTHREAD_STACK_MIN) != 0
             || libc::pthread_attr_getstacksize(&mut attr, &mut stack_size) != 0
-            || stack_size != 65536
+            || stack_size != libc::PTHREAD_STACK_MIN
+            || libc::pthread_attr_setstacksize(&mut attr, libc::PTHREAD_STACK_MIN - 1)
+                != libc::EINVAL
+            || libc::pthread_attr_getstacksize(&mut attr, &mut stack_size) != 0
+            || stack_size != libc::PTHREAD_STACK_MIN
             || libc::pthread_attr_destroy(&mut attr) != 0
         {
             return Err("pthread attributes");
