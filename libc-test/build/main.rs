@@ -172,6 +172,7 @@ fn test_picolibc(t: &Target) {
             "pthread.h",
             "sched.h",
             "sys/mman.h",
+            "sys/stat.h",
             "time.h",
         );
         cfg.skip_const(|c| matches!(c.ident(), "MAP_FAILED" | "PTHREAD_MUTEX_INITIALIZER"));

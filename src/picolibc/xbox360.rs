@@ -2,6 +2,7 @@
 
 use crate::prelude::*;
 use crate::{
+    mode_t,
     off_t,
     size_t,
     ssize_t,
@@ -12,6 +13,13 @@ pub type pthread_t = c_int;
 pub type time_t = i64;
 pub type clockid_t = c_ulong;
 pub type va_list = *mut c_char;
+pub type dev_t = u64;
+pub type ino_t = u64;
+pub type nlink_t = u64;
+pub type uid_t = u32;
+pub type gid_t = u32;
+pub type blksize_t = i32;
+pub type blkcnt_t = i64;
 
 s! {
     pub struct pthread_attr_t {
@@ -34,7 +42,47 @@ s! {
         pub tv_sec: time_t,
         pub tv_nsec: c_long,
     }
+
+    pub struct stat {
+        pub st_dev: dev_t,
+        pub st_ino: ino_t,
+        pub st_mode: mode_t,
+        pub st_nlink: nlink_t,
+        pub st_uid: uid_t,
+        pub st_gid: gid_t,
+        pub st_rdev: dev_t,
+        pub st_size: off_t,
+        pub st_blksize: blksize_t,
+        pub st_blocks: blkcnt_t,
+        pub st_atim: timespec,
+        pub st_mtim: timespec,
+        pub st_ctim: timespec,
+    }
 }
+
+pub const S_IFMT: mode_t = 0o170000;
+pub const S_IFDIR: mode_t = 0o040000;
+pub const S_IFCHR: mode_t = 0o020000;
+pub const S_IFBLK: mode_t = 0o060000;
+pub const S_IFREG: mode_t = 0o100000;
+pub const S_IFLNK: mode_t = 0o120000;
+pub const S_IFSOCK: mode_t = 0o140000;
+pub const S_IFIFO: mode_t = 0o010000;
+pub const S_ISUID: mode_t = 0o004000;
+pub const S_ISGID: mode_t = 0o002000;
+pub const S_ISVTX: mode_t = 0o001000;
+pub const S_IRWXU: mode_t = 0o000700;
+pub const S_IRUSR: mode_t = 0o000400;
+pub const S_IWUSR: mode_t = 0o000200;
+pub const S_IXUSR: mode_t = 0o000100;
+pub const S_IRWXG: mode_t = 0o000070;
+pub const S_IRGRP: mode_t = 0o000040;
+pub const S_IWGRP: mode_t = 0o000020;
+pub const S_IXGRP: mode_t = 0o000010;
+pub const S_IRWXO: mode_t = 0o000007;
+pub const S_IROTH: mode_t = 0o000004;
+pub const S_IWOTH: mode_t = 0o000002;
+pub const S_IXOTH: mode_t = 0o000001;
 
 pub const PTHREAD_CREATE_JOINABLE: c_int = 0;
 pub const PTHREAD_CREATE_DETACHED: c_int = 1;
@@ -113,6 +161,10 @@ pub const CLOCK_REALTIME: clockid_t = 1;
 pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
+    pub fn fstat(fd: c_int, buf: *mut stat) -> c_int;
+    pub fn stat(path: *const c_char, buf: *mut stat) -> c_int;
+    /// The current Xbox Picolibc implementation returns `ENOSYS`.
+    pub fn lstat(path: *const c_char, buf: *mut stat) -> c_int;
     pub fn ftruncate(fd: c_int, length: off_t) -> c_int;
     pub fn pread(fd: c_int, buf: *mut c_void, count: size_t, offset: off_t) -> ssize_t;
     pub fn pwrite(fd: c_int, buf: *const c_void, count: size_t, offset: off_t) -> ssize_t;

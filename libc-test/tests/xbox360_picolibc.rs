@@ -57,6 +57,37 @@ pub fn smoke() -> Result<(), &'static str> {
             return Err("asprintf");
         }
 
+        let mut metadata = core::mem::MaybeUninit::<libc::stat>::uninit();
+        if libc::fstat(1, metadata.as_mut_ptr()) != 0
+            || metadata.assume_init_ref().st_mode & libc::S_IFMT != libc::S_IFCHR
+        {
+            return Err("fstat stdout");
+        }
+        let game_root = b"game:\\\0";
+        if libc::stat(game_root.as_ptr().cast(), metadata.as_mut_ptr()) != 0
+            || metadata.assume_init_ref().st_mode & libc::S_IFMT != libc::S_IFDIR
+        {
+            return Err("stat game directory");
+        }
+        let fd = libc::open(
+            game_root.as_ptr().cast(),
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        );
+        if fd < 0 {
+            return Err("open game directory");
+        }
+        let mut fd_metadata = core::mem::MaybeUninit::<libc::stat>::uninit();
+        let fd_ok = libc::fstat(fd, fd_metadata.as_mut_ptr()) == 0
+            && fd_metadata.assume_init_ref().st_mode & libc::S_IFMT == libc::S_IFDIR
+            && fd_metadata.assume_init_ref().st_dev == metadata.assume_init_ref().st_dev
+            && fd_metadata.assume_init_ref().st_ino == metadata.assume_init_ref().st_ino;
+        if libc::close(fd) != 0 || !fd_ok {
+            return Err("fstat game directory");
+        }
+        if libc::lstat(game_root.as_ptr().cast(), metadata.as_mut_ptr()) != -1 {
+            return Err("lstat unsupported");
+        }
+
         let mut contents = [0u8; 32];
         let stream = libc::fmemopen(
             contents.as_mut_ptr().cast(),
