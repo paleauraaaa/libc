@@ -176,7 +176,9 @@ fn test_picolibc(t: &Target) {
             "sys/stat.h",
             "time.h",
         );
-        cfg.skip_const(|c| matches!(c.ident(), "MAP_FAILED" | "PTHREAD_MUTEX_INITIALIZER"));
+        cfg.skip_const(|c| {
+            matches!(c.ident(), "MAP_FAILED" | "PTHREAD_MUTEX_INITIALIZER" | "PTHREAD_COND_INITIALIZER")
+        });
         // These require unavailable OS functions or an application-provided _user_strerror.
         cfg.skip_fn(|f| {
             matches!(

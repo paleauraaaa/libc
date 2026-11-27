@@ -10,6 +10,7 @@ use crate::{
 };
 
 pub type pthread_t = c_int;
+pub type pthread_key_t = c_uint;
 pub type time_t = i64;
 pub type clockid_t = c_ulong;
 pub type va_list = *mut c_char;
@@ -51,6 +52,14 @@ s! {
         pub __lock: c_int,
         pub __owner: c_uint,
         pub __next_owned: *mut pthread_mutex_t,
+    }
+
+    pub struct pthread_cond_t {
+        pub __placeholder: c_int,
+    }
+
+    pub struct pthread_condattr_t {
+        pub __placeholder: c_int,
     }
 
     pub struct timespec {
@@ -114,6 +123,8 @@ pub const PTHREAD_SCOPE_PROCESS: c_int = 0;
 pub const PTHREAD_SCOPE_SYSTEM: c_int = 1;
 pub const PTHREAD_MUTEX_STALLED: c_int = 0;
 pub const PTHREAD_MUTEX_ROBUST: c_int = 1;
+pub const PTHREAD_MUTEX_NORMAL: c_int = 0;
+pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t { __placeholder: 0 };
 pub const PTHREAD_MUTEX_INITIALIZER: pthread_mutex_t = pthread_mutex_t {
     __robustness: PTHREAD_MUTEX_STALLED,
     __lock: 0,
@@ -144,6 +155,7 @@ pub const EDEADLK: c_int = 45;
 pub const ENOSYS: c_int = 88;
 pub const ENOTEMPTY: c_int = 90;
 pub const ENAMETOOLONG: c_int = 91;
+pub const ETIMEDOUT: c_int = 116;
 pub const ENOTSUP: c_int = 134;
 pub const EOVERFLOW: c_int = 139;
 pub const ENOTRECOVERABLE: c_int = 141;
@@ -246,6 +258,8 @@ extern "C" {
         robustness: *mut c_int,
     ) -> c_int;
     pub fn pthread_mutexattr_setrobust(attr: *mut pthread_mutexattr_t, robustness: c_int) -> c_int;
+    /// The Xbox implementation returns `ENOSYS`.
+    pub fn pthread_mutexattr_settype(attr: *mut pthread_mutexattr_t, kind: c_int) -> c_int;
     pub fn pthread_mutex_init(
         mutex: *mut pthread_mutex_t,
         attr: *const pthread_mutexattr_t,
@@ -255,6 +269,29 @@ extern "C" {
     pub fn pthread_mutex_unlock(mutex: *mut pthread_mutex_t) -> c_int;
     pub fn pthread_mutex_destroy(mutex: *mut pthread_mutex_t) -> c_int;
     pub fn pthread_mutex_consistent(mutex: *mut pthread_mutex_t) -> c_int;
+
+    // The integer-returning functions below return ENOSYS.
+    pub fn pthread_cond_init(cond: *mut pthread_cond_t, attr: *const pthread_condattr_t) -> c_int;
+    pub fn pthread_cond_destroy(cond: *mut pthread_cond_t) -> c_int;
+    pub fn pthread_cond_signal(cond: *mut pthread_cond_t) -> c_int;
+    pub fn pthread_cond_broadcast(cond: *mut pthread_cond_t) -> c_int;
+    pub fn pthread_cond_wait(cond: *mut pthread_cond_t, mutex: *mut pthread_mutex_t) -> c_int;
+    pub fn pthread_cond_timedwait(
+        cond: *mut pthread_cond_t,
+        mutex: *mut pthread_mutex_t,
+        abstime: *const timespec,
+    ) -> c_int;
+    pub fn pthread_condattr_init(attr: *mut pthread_condattr_t) -> c_int;
+    pub fn pthread_condattr_destroy(attr: *mut pthread_condattr_t) -> c_int;
+    pub fn pthread_condattr_setclock(attr: *mut pthread_condattr_t, clock_id: clockid_t) -> c_int;
+    pub fn pthread_key_create(
+        key: *mut pthread_key_t,
+        destructor: Option<unsafe extern "C" fn(*mut c_void)>,
+    ) -> c_int;
+    pub fn pthread_key_delete(key: pthread_key_t) -> c_int;
+    /// Returns null and sets errno to ENOSYS.
+    pub fn pthread_getspecific(key: pthread_key_t) -> *mut c_void;
+    pub fn pthread_setspecific(key: pthread_key_t, value: *const c_void) -> c_int;
 
     pub fn mmap(
         addr: *mut c_void,

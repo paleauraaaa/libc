@@ -151,6 +151,29 @@ pub fn smoke() -> Result<(), &'static str> {
         }
 
         let mut mutex_attr = libc::pthread_mutexattr_t { __robustness: 0 };
+        let mut cond = libc::PTHREAD_COND_INITIALIZER;
+        let mut cond_attr = libc::pthread_condattr_t { __placeholder: 0 };
+        let mut key: libc::pthread_key_t = 123;
+        if libc::pthread_mutexattr_settype(&mut mutex_attr, libc::PTHREAD_MUTEX_NORMAL)
+            != libc::ENOSYS
+            || libc::pthread_condattr_init(&mut cond_attr) != libc::ENOSYS
+            || libc::pthread_condattr_setclock(&mut cond_attr, libc::CLOCK_MONOTONIC)
+                != libc::ENOSYS
+            || libc::pthread_condattr_destroy(&mut cond_attr) != libc::ENOSYS
+            || libc::pthread_cond_init(&mut cond, &cond_attr) != libc::ENOSYS
+            || libc::pthread_cond_signal(&mut cond) != libc::ENOSYS
+            || libc::pthread_cond_broadcast(&mut cond) != libc::ENOSYS
+            || libc::pthread_cond_wait(&mut cond, ptr::null_mut()) != libc::ENOSYS
+            || libc::pthread_cond_timedwait(&mut cond, ptr::null_mut(), ptr::null()) != libc::ENOSYS
+            || libc::pthread_cond_destroy(&mut cond) != libc::ENOSYS
+            || libc::pthread_key_create(&mut key, None) != libc::ENOSYS
+            || key != 123
+            || libc::pthread_key_delete(key) != libc::ENOSYS
+            || libc::pthread_setspecific(key, ptr::null()) != libc::ENOSYS
+            || !libc::pthread_getspecific(key).is_null()
+        {
+            return Err("unsupported pthread interfaces");
+        }
         if libc::pthread_mutexattr_init(&mut mutex_attr) != 0 {
             return Err("pthread_mutexattr_init");
         }
