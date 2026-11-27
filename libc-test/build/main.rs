@@ -188,7 +188,6 @@ fn test_picolibc(t: &Target) {
                     | "rmdir"
                     | "strerror"
                     | "tmpfile"
-                    | "unlink"
             )
         });
     }

@@ -238,3 +238,48 @@ pub fn smoke() -> Result<(), &'static str> {
 fn xbox360_picolibc_smoke() {
     smoke().unwrap();
 }
+
+pub fn unlink_smoke() -> Result<(), &'static str> {
+    unsafe {
+        let path = b"game:\\libc-unlink-smoke.bin\0";
+        let path_ptr = path.as_ptr().cast();
+        let fd = libc::open(
+            path_ptr,
+            libc::O_CREAT | libc::O_EXCL | libc::O_RDWR,
+            0 as libc::mode_t,
+        );
+        if fd < 0 {
+            return Err("create unlinkat test file");
+        }
+        if libc::close(fd) != 0 {
+            return Err("close unlinkat test file");
+        }
+        if libc::unlinkat(-1, path_ptr, 0) != 0 {
+            return Err("unlinkat file");
+        }
+        let mut metadata = core::mem::MaybeUninit::<libc::stat>::uninit();
+        if libc::stat(path_ptr, metadata.as_mut_ptr()) != -1 {
+            return Err("unlinkat file still exists");
+        }
+        let fd = libc::open(
+            path_ptr,
+            libc::O_CREAT | libc::O_EXCL | libc::O_RDWR,
+            0 as libc::mode_t,
+        );
+        if fd < 0 || libc::close(fd) != 0 {
+            return Err("create unlink test file");
+        }
+        if libc::unlink(path_ptr) != 0 || libc::stat(path_ptr, metadata.as_mut_ptr()) != -1 {
+            return Err("unlink file");
+        }
+        if libc::unlinkat(-1, b"game:\\\0".as_ptr().cast(), libc::AT_REMOVEDIR) != -1 {
+            return Err("unlinkat directory deletion");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn xbox360_picolibc_unlink() {
+    unlink_smoke().unwrap();
+}
