@@ -68,6 +68,9 @@ expose `errno`, whose implementation depends on the Picolibc configuration.
 The `libc-test` ABI checks require a target with Rust `std`, a C compiler, and
 the matching configured Picolibc headers.
 
+On Xbox 360, `unlink` and `unlinkat` reject locally open files; `unlinkat` does
+not support `AT_REMOVEDIR`.
+
 See [`ci/verify-build.py`](https://github.com/rust-lang/libc/blob/HEAD/ci/verify-build.py) for
 the platforms on which `libc` is guaranteed to build for each Rust toolchain.
 The test matrices at [GitHub Actions] show the platforms in which `libc` tests

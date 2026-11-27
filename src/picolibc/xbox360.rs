@@ -22,6 +22,7 @@ pub type blksize_t = i32;
 pub type blkcnt_t = i64;
 
 pub const AT_SYMLINK_NOFOLLOW: c_int = 0x0002;
+pub const AT_REMOVEDIR: c_int = 0x0008;
 pub const AT_EMPTY_PATH: c_int = 0x0010;
 
 s! {
@@ -169,6 +170,8 @@ extern "C" {
     pub fn stat(path: *const c_char, buf: *mut stat) -> c_int;
     /// The current Xbox Picolibc implementation returns `ENOSYS`.
     pub fn lstat(path: *const c_char, buf: *mut stat) -> c_int;
+    /// The Xbox port rejects locally open files and does not support `AT_REMOVEDIR`.
+    pub fn unlinkat(dirfd: c_int, path: *const c_char, flags: c_int) -> c_int;
     pub fn ftruncate(fd: c_int, length: off_t) -> c_int;
     pub fn pread(fd: c_int, buf: *mut c_void, count: size_t, offset: off_t) -> ssize_t;
     pub fn pwrite(fd: c_int, buf: *const c_void, count: size_t, offset: off_t) -> ssize_t;
