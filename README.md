@@ -76,8 +76,9 @@ Xbox POSIX error constants match the port's headers; their presence does not
 imply that the corresponding OS facilities are implemented.
 `dup` and `dup2` share file offsets on Xbox, including redirected standard
 output and error descriptors.
-`mkdir` and `mkdirat` ignore mode bits; `rewinddir` and `dirfd` are not
-implemented in the port.
+`mkdir` and `mkdirat` ignore mode bits; `rewinddir` is not implemented in the
+port. `dirfd` returns a descriptor owned and closed by the directory stream;
+use it only for operations that do not alter the stream position.
 
 See [`ci/verify-build.py`](https://github.com/rust-lang/libc/blob/HEAD/ci/verify-build.py) for
 the platforms on which `libc` is guaranteed to build for each Rust toolchain.

@@ -260,6 +260,7 @@ extern "C" {
     pub fn fdopendir(fd: c_int) -> *mut DIR;
     pub fn opendir(name: *const c_char) -> *mut DIR;
     pub fn readdir(dir: *mut DIR) -> *mut dirent;
+    pub fn dirfd(dir: *mut DIR) -> c_int;
     pub fn closedir(dir: *mut DIR) -> c_int;
     /// The Xbox port ignores POSIX mode bits.
     pub fn mkdir(path: *const c_char, mode: mode_t) -> c_int;

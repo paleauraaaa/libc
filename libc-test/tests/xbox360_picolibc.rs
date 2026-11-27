@@ -394,6 +394,9 @@ pub fn directory_smoke() -> Result<(), &'static str> {
         if stream.is_null() {
             return Err("fdopendir");
         }
+        if libc::dirfd(stream) != fd {
+            return Err("dirfd after fdopendir");
+        }
         let mut found_file = false;
         loop {
             let entry = libc::readdir(stream);
@@ -409,8 +412,18 @@ pub fn directory_smoke() -> Result<(), &'static str> {
             return Err("readdir or closedir");
         }
         let stream = libc::opendir(path.as_ptr().cast());
-        if stream.is_null() || libc::closedir(stream) != 0 {
+        if stream.is_null() {
             return Err("opendir");
+        }
+        let stream_fd = libc::dirfd(stream);
+        let mut dir_stat = core::mem::MaybeUninit::<libc::stat>::uninit();
+        if stream_fd < 0
+            || libc::fstat(stream_fd, dir_stat.as_mut_ptr()) != 0
+            || dir_stat.assume_init_ref().st_mode & libc::S_IFMT != libc::S_IFDIR
+            || libc::closedir(stream) != 0
+            || libc::close(stream_fd) != -1
+        {
+            return Err("dirfd after opendir");
         }
         if libc::unlink(b"game:\\libc-dir-smoke.bin\0".as_ptr().cast()) != 0 {
             return Err("unlink directory entry");

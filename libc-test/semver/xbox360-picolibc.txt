@@ -168,6 +168,7 @@ clockid_t
 closedir
 dev_t
 dirent
+dirfd
 fdopendir
 fstat
 fstatat
