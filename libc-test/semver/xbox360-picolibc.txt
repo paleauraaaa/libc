@@ -175,6 +175,7 @@ fdopendir
 fchmod
 fstat
 fstatat
+fsync
 gid_t
 ino_t
 lstat
