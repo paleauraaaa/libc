@@ -21,6 +21,9 @@ pub type gid_t = u32;
 pub type blksize_t = i32;
 pub type blkcnt_t = i64;
 
+pub const AT_SYMLINK_NOFOLLOW: c_int = 0x0002;
+pub const AT_EMPTY_PATH: c_int = 0x0010;
+
 s! {
     pub struct pthread_attr_t {
         pub __stack_size: c_int,
@@ -162,6 +165,7 @@ pub const CLOCK_MONOTONIC: clockid_t = 4;
 
 extern "C" {
     pub fn fstat(fd: c_int, buf: *mut stat) -> c_int;
+    pub fn fstatat(dirfd: c_int, path: *const c_char, buf: *mut stat, flags: c_int) -> c_int;
     pub fn stat(path: *const c_char, buf: *mut stat) -> c_int;
     /// The current Xbox Picolibc implementation returns `ENOSYS`.
     pub fn lstat(path: *const c_char, buf: *mut stat) -> c_int;

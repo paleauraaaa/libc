@@ -84,6 +84,24 @@ pub fn smoke() -> Result<(), &'static str> {
         if libc::close(fd) != 0 || !fd_ok {
             return Err("fstat game directory");
         }
+        if libc::fstatat(-1, game_root.as_ptr().cast(), metadata.as_mut_ptr(), 0) != 0
+            || metadata.assume_init_ref().st_mode & libc::S_IFMT != libc::S_IFDIR
+            || libc::fstatat(
+                1,
+                b"\0".as_ptr().cast(),
+                metadata.as_mut_ptr(),
+                libc::AT_EMPTY_PATH,
+            ) != 0
+            || metadata.assume_init_ref().st_mode & libc::S_IFMT != libc::S_IFCHR
+            || libc::fstatat(
+                -1,
+                game_root.as_ptr().cast(),
+                metadata.as_mut_ptr(),
+                libc::AT_SYMLINK_NOFOLLOW,
+            ) != -1
+        {
+            return Err("fstatat");
+        }
         if libc::lstat(game_root.as_ptr().cast(), metadata.as_mut_ptr()) != -1 {
             return Err("lstat unsupported");
         }

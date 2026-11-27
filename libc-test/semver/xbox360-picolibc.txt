@@ -1,3 +1,5 @@
+AT_EMPTY_PATH
+AT_SYMLINK_NOFOLLOW
 CLOCK_MONOTONIC
 CLOCK_REALTIME
 EACCES
@@ -93,6 +95,7 @@ clock_gettime
 clockid_t
 dev_t
 fstat
+fstatat
 gid_t
 ino_t
 lstat
