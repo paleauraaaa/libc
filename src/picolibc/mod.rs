@@ -21,6 +21,7 @@ pub type intptr_t = isize;
 pub type uintptr_t = usize;
 pub type sig_atomic_t = c_int;
 pub type sighandler_t = size_t;
+pub type sigset_t = c_ulong;
 
 extern_ty! {
     pub type FILE;
@@ -76,6 +77,8 @@ extern "C" {
     pub fn _exit(status: c_int) -> !;
     pub fn signal(sig: c_int, handler: sighandler_t) -> sighandler_t;
     pub fn raise(sig: c_int) -> c_int;
+    pub fn sigaddset(set: *mut sigset_t, sig: c_int) -> c_int;
+    pub fn sigemptyset(set: *mut sigset_t) -> c_int;
 
     pub fn memcpy(dest: *mut c_void, src: *const c_void, n: size_t) -> *mut c_void;
     pub fn memmove(dest: *mut c_void, src: *const c_void, n: size_t) -> *mut c_void;
