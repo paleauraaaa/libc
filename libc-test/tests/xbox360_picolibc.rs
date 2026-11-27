@@ -423,3 +423,41 @@ pub fn directory_smoke() -> Result<(), &'static str> {
 fn xbox360_picolibc_directory() {
     directory_smoke().unwrap();
 }
+
+pub fn dup_smoke() -> Result<(), &'static str> {
+    unsafe {
+        let path = b"game:\\libc-dup-smoke.bin\0";
+        let fd = libc::open(
+            path.as_ptr().cast(),
+            libc::O_CREAT | libc::O_EXCL | libc::O_RDWR,
+            0 as libc::mode_t,
+        );
+        if fd < 0 {
+            return Err("create dup fixture");
+        }
+        let duplicate = libc::dup(fd);
+        if duplicate < 0
+            || libc::write(fd, b"abc".as_ptr().cast(), 3) != 3
+            || libc::lseek(duplicate, 0, libc::SEEK_CUR) != 3
+            || libc::dup2(duplicate, fd) != fd
+            || libc::close(duplicate) != 0
+            || libc::lseek(fd, 0, libc::SEEK_SET) != 0
+        {
+            return Err("dup or dup2");
+        }
+        let mut buf = [0u8; 3];
+        if libc::read(fd, buf.as_mut_ptr().cast(), buf.len()) != 3
+            || &buf != b"abc"
+            || libc::close(fd) != 0
+            || libc::unlink(path.as_ptr().cast()) != 0
+        {
+            return Err("dup fixture read or cleanup");
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn xbox360_picolibc_dup() {
+    dup_smoke().unwrap();
+}

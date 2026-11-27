@@ -32,6 +32,8 @@ chdir
 clearerr
 close
 dprintf
+dup
+dup2
 exit
 fdopen
 fchdir
