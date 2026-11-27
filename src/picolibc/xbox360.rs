@@ -27,6 +27,11 @@ pub const AT_SYMLINK_NOFOLLOW: c_int = 0x0002;
 pub const AT_REMOVEDIR: c_int = 0x0008;
 pub const AT_EMPTY_PATH: c_int = 0x0010;
 
+pub const NSIG: c_int = 32;
+pub const MINSIGSTKSZ: size_t = 2048;
+pub const SIGSTKSZ: size_t = 8192;
+pub const SIG2STR_MAX: c_int = 17;
+
 extern_ty! {
     pub type DIR;
 }

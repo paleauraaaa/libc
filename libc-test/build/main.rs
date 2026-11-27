@@ -164,7 +164,27 @@ fn test_picolibc(t: &Target) {
     } else {
         cfg.define("_POSIX_C_SOURCE", Some("200809L"));
     }
-    headers!(cfg, "fcntl.h", "stdint.h", "stdio.h", "stdlib.h", "string.h", "unistd.h",);
+    headers!(cfg, "fcntl.h", "signal.h", "stdint.h", "stdio.h", "stdlib.h", "string.h", "unistd.h",);
+    // Picolibc represents signal handlers as function pointers.
+    cfg.skip_alias(|ty| ty.ident() == "sighandler_t");
+    let xbox360 = t.os == "xbox360";
+    cfg.skip_const(move |c| {
+        matches!(c.ident(), "SIG_DFL" | "SIG_ERR" | "SIG_IGN")
+            || (xbox360
+                && matches!(
+                    c.ident(),
+                    "MAP_FAILED" | "PTHREAD_MUTEX_INITIALIZER" | "PTHREAD_COND_INITIALIZER"
+                ))
+    });
+    cfg.skip_fn(move |f| {
+        f.ident() == "signal"
+            // These require unavailable OS functions or an application-provided _user_strerror.
+            || (xbox360
+                && matches!(
+                    f.ident(),
+                    "fchdir" | "perror" | "popen" | "rmdir" | "strerror" | "tmpfile"
+                ))
+    });
     if t.os == "xbox360" {
         headers!(
             cfg,
@@ -176,21 +196,6 @@ fn test_picolibc(t: &Target) {
             "sys/stat.h",
             "time.h",
         );
-        cfg.skip_const(|c| {
-            matches!(c.ident(), "MAP_FAILED" | "PTHREAD_MUTEX_INITIALIZER" | "PTHREAD_COND_INITIALIZER")
-        });
-        // These require unavailable OS functions or an application-provided _user_strerror.
-        cfg.skip_fn(|f| {
-            matches!(
-                f.ident(),
-                "fchdir"
-                    | "perror"
-                    | "popen"
-                    | "rmdir"
-                    | "strerror"
-                    | "tmpfile"
-            )
-        });
     }
     cfg.rename_struct_ty(|ty| {
         (ty == "FILE" || ty == "DIR" || ty.ends_with("_t")).then(|| ty.to_string())
