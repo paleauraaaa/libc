@@ -67,6 +67,7 @@ s! {
         pub __placeholder: c_int,
     }
 
+    #[derive(Default)]
     pub struct timespec {
         pub tv_sec: time_t,
         pub tv_nsec: c_long,
