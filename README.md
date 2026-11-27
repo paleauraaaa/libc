@@ -81,6 +81,11 @@ Xbox thread stack attributes accept sizes from `PTHREAD_STACK_MIN` through
 `mkdir` and `mkdirat` ignore mode bits; `rewinddir` is not implemented in the
 port. `dirfd` returns a descriptor owned and closed by the directory stream;
 use it only for operations that do not alter the stream position.
+`chmod` and `fchmod` map the presence of any write bit to the native writable
+state; other POSIX mode bits are not preserved.
+When attribute access requires reopening a descriptor's stored path, `fchmod`
+checks file and volume identifiers and rejects mismatches; reopening can fail
+if the file was moved.
 
 See [`ci/verify-build.py`](https://github.com/rust-lang/libc/blob/HEAD/ci/verify-build.py) for
 the platforms on which `libc` is guaranteed to build for each Rust toolchain.

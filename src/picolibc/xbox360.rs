@@ -268,6 +268,8 @@ extern "C" {
     pub fn mkdir(path: *const c_char, mode: mode_t) -> c_int;
     /// The Xbox port ignores POSIX mode bits.
     pub fn mkdirat(dirfd: c_int, path: *const c_char, mode: mode_t) -> c_int;
+    pub fn chmod(path: *const c_char, mode: mode_t) -> c_int;
+    pub fn fchmod(fd: c_int, mode: mode_t) -> c_int;
     pub fn fstat(fd: c_int, buf: *mut stat) -> c_int;
     pub fn fstatat(dirfd: c_int, path: *const c_char, buf: *mut stat, flags: c_int) -> c_int;
     pub fn stat(path: *const c_char, buf: *mut stat) -> c_int;

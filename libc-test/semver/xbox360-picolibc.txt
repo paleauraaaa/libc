@@ -164,6 +164,7 @@ S_IXOTH
 S_IXUSR
 blkcnt_t
 blksize_t
+chmod
 clock_gettime
 clockid_t
 closedir
@@ -171,6 +172,7 @@ dev_t
 dirent
 dirfd
 fdopendir
+fchmod
 fstat
 fstatat
 gid_t
